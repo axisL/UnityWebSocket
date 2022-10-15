@@ -174,6 +174,20 @@ var WebSocketLibrary =
                     _free(buffer);
                 }
             }
+            else if(typeof ev.data == 'string')
+            {
+                var length = lengthBytesUTF8(ev.data) + 1;
+                var buffer = _malloc(length);
+                stringToUTF8(ev.data, buffer, length);
+                try
+                {
+                    Module.dynCall_vii(webSocketManager.onMessageStr, instanceId, buffer);
+                }
+                finally
+                {
+                    _free(buffer);
+                }
+            }
             else if (ev.data instanceof Blob)
             {
                 var reader = new FileReader();
@@ -193,20 +207,6 @@ var WebSocketLibrary =
                     }
                 });
                 reader.readAsArrayBuffer(ev.data);
-            }
-            else if(typeof ev.data == 'string')
-            {
-                var length = lengthBytesUTF8(ev.data) + 1;
-                var buffer = _malloc(length);
-                stringToUTF8(ev.data, buffer, length);
-                try
-                {
-                    Module.dynCall_vii(webSocketManager.onMessageStr, instanceId, buffer);
-                }
-                finally
-                {
-                    _free(buffer);
-                }
             }
             else
             {
@@ -297,7 +297,7 @@ var WebSocketLibrary =
         if (instance.ws === null) return -3;
         if (instance.ws.readyState !== 1) return -6;
 
-        instance.ws.send(HEAPU8.slice(bufferPtr, bufferPtr + length));
+        instance.ws.send(buffer.slice(bufferPtr, bufferPtr + length));
 
         return 0;
     },
